@@ -1,0 +1,44 @@
+name: Release
+run-name: "Release (branch: ${{ github.ref_name }})"
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "0 10 * * *"
+  push:
+    branches:
+      - master
+
+jobs:
+  python-3-11:
+    runs-on: ubuntu-24.04
+    env:
+      ACR_URL: ${{ secrets.ACR_URL }}
+      ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+      DOCKER_USERNAME: pcm0
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      GPG_KEY: A035C8C19219BA821ECEA86B64E628F8D684696D
+      PYTHON_VERSION: 3.11.14
+      PYTHON_SHA256: 8d3ed8ec5c88c1c95f5e558612a725450d2452813ddad5e58fdb1a53b1209b78
+    steps:
+    - uses: actions/checkout@v4
+    - name: Podman
+      continue-on-error: false
+      run: |
+        podman build \
+        --build-arg=GPG_KEY=${GPG_KEY} \
+        --build-arg=PYTHON_VERSION=${PYTHON_VERSION} \
+        --build-arg=PYTHON_SHA256=${PYTHON_SHA256} \
+        -f Dockerfile \
+        . \
+        -t oitacr.azurecr.io/pmartin47/python:${PYTHON_VERSION} \
+        -t docker.io/pcm0/python:${PYTHON_VERSION}
+    - name: Push to Docker Hub
+      run: |
+        podman login $ACR_URL --username $ACR_USERNAME --password $ACR_PASSWORD
+        podman images | awk "/$ACR_URL\/pmartin47\/python/ { print \$1\":\"\$2 }" | xargs -I {} podman push {}
+        podman logout
+        podman login docker.io --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
+        podman images | awk "/pcm0\/python/ { print \$1\":\"\$2 }" | xargs -I {} podman push {}
+        podman logout
