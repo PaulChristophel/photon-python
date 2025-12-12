@@ -4,6 +4,10 @@ FROM photon:5.0 AS python-base
 ENV PATH=/usr/local/bin:$PATH
 ENV LANG=C.UTF-8
 
+ENV CC=clang
+ENV CXX=clang++
+ENV LDFLAGS="${LDFLAGS:-} -fuse-ld=lld"
+
 ARG PYTHON_VERSION=3.11.14
 ARG PYTHON_SHA256=8d3ed8ec5c88c1c95f5e558612a725450d2452813ddad5e58fdb1a53b1209b78
 
@@ -11,9 +15,10 @@ ARG PYTHON_SHA256=8d3ed8ec5c88c1c95f5e558612a725450d2452813ddad5e58fdb1a53b1209b
 RUN set -eux; \
 	tdnf update -y; \
 	tdnf install -y \
+		clang \
+		lld \
 		build-essential \
 		wget \
-		gnupg \
 		ca-certificates \
 		xz \
 		zlib \
@@ -52,11 +57,11 @@ RUN set -eux; \
 		--with-ensurepip \
 	; \
 	nproc="$(getconf _NPROCESSORS_ONLN || nproc)"; \
-	make -j 1; \
+	make -j "$nproc"; \
 	\
 	# prevent accidental usage of a system installed libpython of the same version
 	rm python; \
-	make -j 1 \
+	make -j "$nproc" \
 		"LDFLAGS=${LDFLAGS:--Wl,-rpath='\$\$ORIGIN/../lib'}" \
 		python \
 	; \
