@@ -4,7 +4,6 @@ FROM photon:5.0 AS python-base
 ENV PATH=/usr/local/bin:$PATH
 ENV LANG=C.UTF-8
 
-ARG GPG_KEY=A035C8C19219BA821ECEA86B64E628F8D684696D
 ARG PYTHON_VERSION=3.11.14
 ARG PYTHON_SHA256=8d3ed8ec5c88c1c95f5e558612a725450d2452813ddad5e58fdb1a53b1209b78
 
@@ -36,12 +35,6 @@ RUN set -eux; \
 	rm -rf /var/cache/tdnf; \
 	wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz"; \
 	echo "$PYTHON_SHA256 *python.tar.xz" | sha256sum -c -; \
-	wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc"; \
-	GNUPGHOME="$(mktemp -d)"; export GNUPGHOME; \
-	curl -fsSL https://keys.openpgp.org/vks/v1/by-fingerprint/${GPG_KEY} | gpg --import; \
-	gpg --batch --verify python.tar.xz.asc python.tar.xz; \
-	gpgconf --kill all; \
-	rm -rf "$GNUPGHOME" python.tar.xz.asc; \
 	mkdir -p /usr/src/python; \
 	tar --extract --directory /usr/src/python --strip-components=1 --file python.tar.xz; \
 	rm python.tar.xz; \
@@ -59,11 +52,11 @@ RUN set -eux; \
 		--with-ensurepip \
 	; \
 	nproc="$(getconf _NPROCESSORS_ONLN || nproc)"; \
-	make -j "$nproc"; \
+	make -j 1; \
 	\
 	# prevent accidental usage of a system installed libpython of the same version
 	rm python; \
-	make -j "$nproc" \
+	make -j 1 \
 		"LDFLAGS=${LDFLAGS:--Wl,-rpath='\$\$ORIGIN/../lib'}" \
 		python \
 	; \

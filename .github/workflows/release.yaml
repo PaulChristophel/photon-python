@@ -18,7 +18,6 @@ jobs:
       ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
       DOCKER_USERNAME: pcm0
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      GPG_KEY: A035C8C19219BA821ECEA86B64E628F8D684696D
       PYTHON_VERSION: 3.11.14
       PYTHON_SHA256: 8d3ed8ec5c88c1c95f5e558612a725450d2452813ddad5e58fdb1a53b1209b78
     steps:
@@ -27,7 +26,102 @@ jobs:
       continue-on-error: false
       run: |
         podman build \
-        --build-arg=GPG_KEY=${GPG_KEY} \
+        --build-arg=PYTHON_VERSION=${PYTHON_VERSION} \
+        --build-arg=PYTHON_SHA256=${PYTHON_SHA256} \
+        -f Dockerfile \
+        . \
+        -t oitacr.azurecr.io/pmartin47/python:${PYTHON_VERSION} \
+        -t docker.io/pcm0/python:${PYTHON_VERSION}
+    - name: Push to Docker Hub
+      run: |
+        podman login $ACR_URL --username $ACR_USERNAME --password $ACR_PASSWORD
+        podman images | awk "/$ACR_URL\/pmartin47\/python/ { print \$1\":\"\$2 }" | xargs -I {} podman push {}
+        podman logout
+        podman login docker.io --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
+        podman images | awk "/pcm0\/python/ { print \$1\":\"\$2 }" | xargs -I {} podman push {}
+        podman logout
+
+
+  python-3-12:
+    runs-on: ubuntu-24.04
+    env:
+      ACR_URL: ${{ secrets.ACR_URL }}
+      ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+      DOCKER_USERNAME: pcm0
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      PYTHON_VERSION: 3.12.12
+      PYTHON_SHA256: fb85a13414b028c49ba18bbd523c2d055a30b56b18b92ce454ea2c51edc656c4
+    steps:
+    - uses: actions/checkout@v4
+    - name: Podman
+      continue-on-error: false
+      run: |
+        podman build \
+        --build-arg=PYTHON_VERSION=${PYTHON_VERSION} \
+        --build-arg=PYTHON_SHA256=${PYTHON_SHA256} \
+        -f Dockerfile \
+        . \
+        -t oitacr.azurecr.io/pmartin47/python:${PYTHON_VERSION} \
+        -t docker.io/pcm0/python:${PYTHON_VERSION}
+    - name: Push to Docker Hub
+      run: |
+        podman login $ACR_URL --username $ACR_USERNAME --password $ACR_PASSWORD
+        podman images | awk "/$ACR_URL\/pmartin47\/python/ { print \$1\":\"\$2 }" | xargs -I {} podman push {}
+        podman logout
+        podman login docker.io --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
+        podman images | awk "/pcm0\/python/ { print \$1\":\"\$2 }" | xargs -I {} podman push {}
+        podman logout
+
+
+  python-3-13:
+    runs-on: ubuntu-24.04
+    env:
+      ACR_URL: ${{ secrets.ACR_URL }}
+      ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+      DOCKER_USERNAME: pcm0
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      PYTHON_VERSION: 3.13.11
+      PYTHON_SHA256: 16ede7bb7cdbfa895d11b0642fa0e523f291e6487194d53cf6d3b338c3a17ea2
+    steps:
+    - uses: actions/checkout@v4
+    - name: Podman
+      continue-on-error: false
+      run: |
+        podman build \
+        --build-arg=PYTHON_VERSION=${PYTHON_VERSION} \
+        --build-arg=PYTHON_SHA256=${PYTHON_SHA256} \
+        -f Dockerfile \
+        . \
+        -t oitacr.azurecr.io/pmartin47/python:${PYTHON_VERSION} \
+        -t docker.io/pcm0/python:${PYTHON_VERSION}
+    - name: Push to Docker Hub
+      run: |
+        podman login $ACR_URL --username $ACR_USERNAME --password $ACR_PASSWORD
+        podman images | awk "/$ACR_URL\/pmartin47\/python/ { print \$1\":\"\$2 }" | xargs -I {} podman push {}
+        podman logout
+        podman login docker.io --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
+        podman images | awk "/pcm0\/python/ { print \$1\":\"\$2 }" | xargs -I {} podman push {}
+        podman logout
+
+
+  python-3-14:
+    runs-on: ubuntu-24.04
+    env:
+      ACR_URL: ${{ secrets.ACR_URL }}
+      ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+      DOCKER_USERNAME: pcm0
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      PYTHON_VERSION: 3.14.2
+      PYTHON_SHA256: ce543ab854bc256b61b71e9b27f831ffd1bfd60a479d639f8be7f9757cf573e9
+    steps:
+    - uses: actions/checkout@v4
+    - name: Podman
+      continue-on-error: false
+      run: |
+        podman build \
         --build-arg=PYTHON_VERSION=${PYTHON_VERSION} \
         --build-arg=PYTHON_SHA256=${PYTHON_SHA256} \
         -f Dockerfile \
