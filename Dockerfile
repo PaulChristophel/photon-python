@@ -4,9 +4,9 @@ FROM photon:5.0 AS python-base
 ENV PATH=/usr/local/bin:$PATH
 ENV LANG=C.UTF-8
 
-ENV CC=clang
-ENV CXX=clang++
-ENV LDFLAGS="${LDFLAGS:-} -fuse-ld=lld"
+# ENV CC=clang
+# ENV CXX=clang++
+# ENV LDFLAGS="${LDFLAGS:-} -fuse-ld=lld"
 
 ARG PYTHON_VERSION=3.11.14
 ARG PYTHON_SHA256=8d3ed8ec5c88c1c95f5e558612a725450d2452813ddad5e58fdb1a53b1209b78
@@ -15,8 +15,6 @@ ARG PYTHON_SHA256=8d3ed8ec5c88c1c95f5e558612a725450d2452813ddad5e58fdb1a53b1209b
 RUN set -eux; \
 	tdnf update -y; \
 	tdnf install -y \
-		clang \
-		lld \
 		build-essential \
 		wget \
 		ca-certificates \
@@ -50,7 +48,6 @@ RUN set -eux; \
 	if [ "$arch" = "riscv64" ]; then lto_flag=""; fi; \
 	ax_cv_c_float_words_bigendian=no ac_cv_c_bigendian=no ./configure \
 		--enable-loadable-sqlite-extensions \
-		--enable-optimizations \
 		--enable-option-checking=fatal \
 		--enable-shared \
 		"$lto_flag" \
